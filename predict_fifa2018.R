@@ -1,4 +1,4 @@
-stats2018 <- read.csv("C:\\Users\\doyle\\Documents\\QLS_Projects\\FIFA 2018 Statistics.csv")
+stats2018 <- read.csv("FIFA_2018_Statistics.csv")
 
 odds <- seq(1,nrow(stats2018),2)
 evens <- seq(2,nrow(stats2018),2)
@@ -21,3 +21,31 @@ matches2018$Winner <- ifelse( #If team A scored more goals in regular time or PS
 matches2018$Winner <- as.factor(matches2018$Winner)
 
 
+## R data processing for sane people
+library(tidyverse)
+## load data
+train <- read_csv("HistoricWorldCupMatches.csv") %>% select(Home_Team_Name, Home_Team_Goals, Away_Team_Name, Away_Team_Goals) %>% drop_na()
+## goals scored at home
+home.goals <- train %>%  select(Home_Team_Name,  Home_Team_Goals) %>% rename(Goals = Home_Team_Goals, Team = Home_Team_Name)
+## goals scored away
+away.goals <- train %>%  select(Away_Team_Name,  Away_Team_Goals) %>% rename(Goals = Away_Team_Goals, Team = Away_Team_Name)
+
+## calculate goal and game stats for every team, both at home and away
+goals <- rbind(home.goals, away.goals) %>% group_by(Team) %>% summarise(TotalGoals = sum(Goals), Games = n()) %>% drop_na()
+
+## Calculate Win/Loss outcomes. Draws are randomized since we want to apply logistic regresson
+data <- train %>% select(Home_Team_Name, Away_Team_Name, Home_Team_Goals, Away_Team_Goals) %>%
+  mutate(Outcome = ifelse(Away_Team_Goals > Home_Team_Goals, 0, ifelse(Home_Team_Goals > Away_Team_Goals, 1, sample(c(0,1), 1))))
+
+## calculate the total games and total goals of each team in each game
+data1 <- merge(data, goals, by.x="Home_Team_Name", by.y="Team")
+data2 <-merge(data1, goals, by.x="Away_Team_Name", by.y="Team") %>%
+  rename(HomeTotalGoals = TotalGoals.x, HomeTotalGames=Games.x, AwayTotalGoals=TotalGoals.y, AwayTotalGames=Games.y)
+
+## generalized linear models
+library(glmm)
+
+## model fit
+model <- glm(Outcome ~ HomeTotalGames + HomeTotalGoals + AwayTotalGames + AwayTotalGoals, family=binomial(link='logit'),data=data2)
+## barf... they don't predict squat
+summary(model)
