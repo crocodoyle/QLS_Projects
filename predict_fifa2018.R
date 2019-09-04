@@ -54,9 +54,12 @@ library(randomForest)
 
 ## Make outcome a factor
 data2$Outcome <- as.factor(data2$Outcome)
+data2$Away_Team_Name <- as.factor(data2$Away_Team_Name)
+data2$Home_Team_Name <- as.factor(data2$Home_Team_Name)
 ## save model in forest
 forest <- randomForest(
-  Outcome ~ HomeTotalGames + HomeTotalGoals +
+  Outcome ~ Away_Team_Name + Home_Team_Name +
+    HomeTotalGames + HomeTotalGoals +
     AwayTotalGames + AwayTotalGoals +
     AwayGoalsPerGame + HomeGoalsPerGame,
   data=data2,
