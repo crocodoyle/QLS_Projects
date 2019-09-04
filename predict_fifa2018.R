@@ -1,7 +1,9 @@
 stats2018 <- read.csv("FIFA_2018_Statistics.csv")
 
-odds <- seq(1,nrow(stats2018),2)
-evens <- seq(2,nrow(stats2018),2)
+n_rows <- nrow(stats2018)
+
+odds <- seq(1,n_rows,2)
+evens <- seq(2,n_rows,2)
 
 #Make new data frame
 matches2018 <- data.frame("TeamA" = stats2018$Team[odds],
@@ -42,8 +44,19 @@ home.winrate <- data %>% arrange(Home_Team_Name) %>% group_by(Home_Team_Name, Ou
 
 ## calculate the total games and total goals of each team in each game
 data1 <- merge(data, goals, by.x="Home_Team_Name", by.y="Team")
-data2 <-merge(data1, goals, by.x="Away_Team_Name", by.y="Team") %>%
+data2 <- merge(data1, goals, by.x="Away_Team_Name", by.y="Team") %>%
   rename(HomeTotalGoals=TotalGoals.x, HomeTotalGames=Games.x, AwayTotalGoals=TotalGoals.y, AwayTotalGames=Games.y, HomeGoalsPerGame=GoalsPerGame.x, AwayGoalsPerGame =GoalsPerGame.y)
+
+goals <- goals[c("Team", "GoalsPerGame")]
+
+
+goals$GoalsPerGameA <- goals$GoalsPerGame
+matches2018 <- merge(matches2018, goals, by.x="TeamA", by.y="Team")
+
+goals$GoalsPerGameB <- goals$GoalsPerGame
+matches2018 <- merge(matches2018, goals, by.x="TeamB", by.y="Team")
+# matches2018 <- merge(matches2018, goals, by.x="TeamA", by.y="Team")
+
 
 ## generalized linear models
 library(randomForest)
@@ -54,23 +67,15 @@ library(randomForest)
 
 ## Make outcome a factor
 data2$Outcome <- as.factor(data2$Outcome)
-data2$Away_Team_Name <- as.factor(data2$Away_Team_Name)
-data2$Home_Team_Name <- as.factor(data2$Home_Team_Name)
 ## save model in forest
 forest <- randomForest(
-  Outcome ~ Away_Team_Name + Home_Team_Name +
+  Outcome ~
     HomeTotalGames + HomeTotalGoals +
     AwayTotalGames + AwayTotalGoals +
     AwayGoalsPerGame + HomeGoalsPerGame,
   data=data2,
   ntree = 500)
 
-## Confusion matrix:
-## 0   1 class.error
-## 0 60 114  0.65517241
-## 1 65 613  0.09587021
-
 ## prepare to predict on 2018 data
- ## matches2018 %>% mutate(Outcome )
 
 
