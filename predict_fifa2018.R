@@ -47,5 +47,8 @@ library(glmm)
 
 ## model fit
 model <- glm(Outcome ~ HomeTotalGames + HomeTotalGoals + AwayTotalGames + AwayTotalGoals, family=binomial(link='logit'),data=data2)
-## barf... they don't predict squat
+## barf... they don't predict sauat
 summary(model)
+
+data2$Outcome <- as.factor(data2$Outcome)
+randomForest(Outcome ~ HomeTotalGames + HomeTotalGoals + AwayTotalGames + AwayTotalGoals, data=data2)
