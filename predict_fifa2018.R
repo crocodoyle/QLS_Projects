@@ -52,3 +52,8 @@ summary(model)
 
 data2$Outcome <- as.factor(data2$Outcome)
 randomForest(Outcome ~ HomeTotalGames + HomeTotalGoals + AwayTotalGames + AwayTotalGoals, data=data2)
+
+## Confusion matrix:
+## 0   1 class.error
+## 0 60 114  0.65517241
+## 1 65 613  0.09587021
