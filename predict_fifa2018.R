@@ -33,7 +33,8 @@ home.goals <- train %>%  select(Home_Team_Name,  Home_Team_Goals) %>% rename(Goa
 away.goals <- train %>%  select(Away_Team_Name,  Away_Team_Goals) %>% rename(Goals = Away_Team_Goals, Team = Away_Team_Name)
 
 ## calculate goal and game stats for every team, both at home and away
-goals <- rbind(home.goals, away.goals) %>% group_by(Team) %>% summarise(TotalGoals = sum(Goals), Games = n()) %>% drop_na() %>% mutate(GoalsPerGame = TotalGoals/Games)
+goals <- rbind(home.goals, away.goals) %>% group_by(Team) %>% summarise(TotalGoals = sum(Goals), Games = n()) %>% drop_na() %>% mutate(GoalsPerGame = TotalGoals/Games) %>% arrange(desc(GoalsPerGame))
+goals$Rank <- rownames(goals)
 
 ## Calculate Win/Loss outcomes. Draws are randomized since we want to apply logistic regresson
 data <- train %>% select(Home_Team_Name, Away_Team_Name, Home_Team_Goals, Away_Team_Goals) %>%
@@ -45,7 +46,7 @@ home.winrate <- data %>% arrange(Home_Team_Name) %>% group_by(Home_Team_Name, Ou
 ## calculate the total games and total goals of each team in each game
 data1 <- merge(data, goals, by.x="Home_Team_Name", by.y="Team")
 data2 <- merge(data1, goals, by.x="Away_Team_Name", by.y="Team") %>%
-  rename(HomeTotalGoals=TotalGoals.x, HomeTotalGames=Games.x, AwayTotalGoals=TotalGoals.y, AwayTotalGames=Games.y, HomeGoalsPerGame=GoalsPerGame.x, AwayGoalsPerGame =GoalsPerGame.y)
+  rename(HomeTotalGoals=TotalGoals.x, HomeTotalGames=Games.x, AwayTotalGoals=TotalGoals.y, AwayTotalGames=Games.y, HomeGoalsPerGame=GoalsPerGame.x, AwayGoalsPerGame=GoalsPerGame.y, AwayRank=Rank.y, HomeRank=Rank.x)
 
 ## goals <- goals[c("Team", "GoalsPerGame")]
 
@@ -70,6 +71,7 @@ data2$Outcome <- as.factor(data2$Outcome)
 ## save model in forest
 forest <- randomForest(
   Outcome ~
+#    HomeRank + AwayRank +
     HomeTotalGames + HomeTotalGoals +
     AwayTotalGames + AwayTotalGoals +
     AwayGoalsPerGame + HomeGoalsPerGame,
@@ -85,7 +87,7 @@ test <- matches2018 %>% rename(Home_Team_Name=TeamA, Away_Team_Name=TeamB) %>%
 
 test1 <- merge(test, goals, by.x="Home_Team_Name", by.y="Team")
 test2 <- merge(test1, goals, by.x="Away_Team_Name", by.y="Team") %>%
-  rename(HomeTotalGoals=TotalGoals.y, HomeTotalGames=Games.y, AwayTotalGoals=TotalGoals.x, AwayTotalGames=Games.x, HomeGoalsPerGame=GoalsPerGame.y, AwayGoalsPerGame=GoalsPerGame.x)
+  rename(HomeRank=Rank.y, HomeTotalGoals=TotalGoals.y, HomeTotalGames=Games.y, AwayTotalGoals=TotalGoals.x, AwayTotalGames=Games.x, HomeGoalsPerGame=GoalsPerGame.y, AwayGoalsPerGame=GoalsPerGame.x, AwayRank=Rank.x)
 
 test2$Predicted <- predict(forest, test2)
 table(test2$Outcome, test2$Predicted)
