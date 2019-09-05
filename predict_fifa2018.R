@@ -89,3 +89,4 @@ test2 <- merge(test1, goals, by.x="Away_Team_Name", by.y="Team") %>%
 
 test2$Predicted <- predict(forest, test2)
 table(test2$Outcome, test2$Predicted)
+importance(forest)
