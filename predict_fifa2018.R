@@ -20,7 +20,7 @@ matches2018$Winner <- ifelse( #If team A scored more goals in regular time or PS
          as.character(matches2018$TeamB), #if teamB scored more, assign it to Winner; otherwise
          "Tie")) #Make it a tie
 
-matches2018$Winner <- as.factor(matches2018$Winner)
+## matches2018$Winner <- as.factor(matches2018$Winner)
 
 
 ## R data processing for sane people
@@ -47,14 +47,14 @@ data1 <- merge(data, goals, by.x="Home_Team_Name", by.y="Team")
 data2 <- merge(data1, goals, by.x="Away_Team_Name", by.y="Team") %>%
   rename(HomeTotalGoals=TotalGoals.x, HomeTotalGames=Games.x, AwayTotalGoals=TotalGoals.y, AwayTotalGames=Games.y, HomeGoalsPerGame=GoalsPerGame.x, AwayGoalsPerGame =GoalsPerGame.y)
 
-goals <- goals[c("Team", "GoalsPerGame")]
+## goals <- goals[c("Team", "GoalsPerGame")]
 
 
-goals$GoalsPerGameA <- goals$GoalsPerGame
-matches2018 <- merge(matches2018, goals, by.x="TeamA", by.y="Team")
+## goals$GoalsPerGameA <- goals$GoalsPerGame
+## matches2018 <- merge(matches2018, goals, by.x="TeamA", by.y="Team")
 
-goals$GoalsPerGameB <- goals$GoalsPerGame
-matches2018 <- merge(matches2018, goals, by.x="TeamB", by.y="Team")
+## goals$GoalsPerGameB <- goals$GoalsPerGame
+## matches2018 <- merge(matches2018, goals, by.x="TeamB", by.y="Team")
 # matches2018 <- merge(matches2018, goals, by.x="TeamA", by.y="Team")
 
 
@@ -78,4 +78,14 @@ forest <- randomForest(
 
 ## prepare to predict on 2018 data
 
+test <- matches2018 %>% rename(Home_Team_Name=TeamA, Away_Team_Name=TeamB) %>%
+  mutate(Outcome = ifelse(Home_Team_Name == Winner, "Loss", ifelse(Away_Team_Name == Winner, "Win", "Tie"))) %>%
+  select(-GoalsA, -GoalsB, -PSOGoalsA, -PSOGoalsB, -Winner)
 
+
+test1 <- merge(test, goals, by.x="Home_Team_Name", by.y="Team")
+test2 <- merge(test1, goals, by.x="Away_Team_Name", by.y="Team") %>%
+  rename(HomeTotalGoals=TotalGoals.y, HomeTotalGames=Games.y, AwayTotalGoals=TotalGoals.x, AwayTotalGames=Games.x, HomeGoalsPerGame=GoalsPerGame.y, AwayGoalsPerGame=GoalsPerGame.x)
+
+test2$Predicted <- predict(forest, test2)
+table(test2$Outcome, test2$Predicted)
