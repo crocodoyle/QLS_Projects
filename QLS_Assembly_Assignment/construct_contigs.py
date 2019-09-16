@@ -132,7 +132,7 @@ if __name__ == '__main__':
     print('Assembled', len(contigs), 'contigs:')
     print(contigs)
 
-    seqList=[SeqIO.FastaIO.SeqRecord(seq=Seq('TTC'),id='Read0'),SeqIO.FastaIO.SeqRecord(seq=Seq('ATT'),id='Read1'),
+    seq_list=[SeqIO.FastaIO.SeqRecord(seq=Seq('TTC'),id='Read0'),SeqIO.FastaIO.SeqRecord(seq=Seq('ATT'),id='Read1'),
              SeqIO.FastaIO.SeqRecord(seq=Seq('GAA'),id='Read2'),SeqIO.FastaIO.SeqRecord(seq=Seq('TCG'),id='Read3'),
              SeqIO.FastaIO.SeqRecord(seq=Seq('CAT'),id='Read4'),SeqIO.FastaIO.SeqRecord(seq=Seq('AAT'),id='Read5')]
     #b/c both Read4 and Read5 contains AT, we shouldn't stitch either onto Read1

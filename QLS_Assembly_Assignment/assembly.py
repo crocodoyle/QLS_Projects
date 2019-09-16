@@ -17,9 +17,11 @@ def generate_reads(fasta_filename, read_length, coverage=2):
     # Generate fake reads
 
 
-    # print('length of genome:', len(genome))
+    print('Length of genome:', len(genome))
 
-    num_reads = (len(genome) * coverage) // read_length
+    num_reads = int((len(genome) * coverage) // read_length)
+
+    print('Number of reads:', num_reads)
 
     # valid starting locations are from 0 to len(genome) - read_length
     starting_locations = np.random.randint(0, len(genome)-read_length, num_reads)
