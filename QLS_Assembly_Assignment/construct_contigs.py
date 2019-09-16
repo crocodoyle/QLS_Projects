@@ -12,7 +12,9 @@ import numpy as np
 import itertools
 import re
 
-def createPreInxDict(seqList,w,pre=True):
+from assembly import generate_reads
+
+def create_prefix_dict(seq_list, w, pre=True):
     '''
     This makes use of the 'Prefix Index' to construct overlap dictionary
     seqList: list of SeqRecord objects that stores all the reads
@@ -20,25 +22,26 @@ def createPreInxDict(seqList,w,pre=True):
     pre: Boolean. Default=True. Will do prefix if true and suffix otherwise.
     This will return a dictionary recording the preInx
     '''
-    outDict={}
+    out_dict = {}
     #Each fake read is ordered so ReadX is just X element in the list
-    for seqInx in range(len(seqList)):
+    for seq_idx, seq in enumerate(seq_list):
         if pre:
             #first w chars
-            preInx=str(seqList[seqInx].seq)[0:w]
+            prefix_idx = str(seq[0:w])
         else:
             #last w chars
-            preInx=str(seqList[seqInx].seq)[-w:]
+            prefix_idx = str(seq[-w:])
             
-        if preInx in outDict:
-            outDict[preInx].append(seqInx)
+        if prefix_idx in out_dict:
+            out_dict[prefix_idx].append(seq_idx)
         else:
-            outDict[preInx]=[seqInx]
-    return outDict
+            out_dict[prefix_idx] = [seq_idx]
+
+    return out_dict
 
     
     
-def connect2Contigs(seqList,seqIn,preDict,sufDict,w):
+def connect_contig(seq_list, input_contig, pre_dict, suf_dict, w):
     '''
     This function connects 2 sequence together if they overlap
     it will return the coordinates where the cutoff point is.
@@ -52,73 +55,86 @@ def connect2Contigs(seqList,seqIn,preDict,sufDict,w):
     '''
     
     #We are using the fact that all sequence in seqList has the same length
-    seqLength=len(seqList[0])
-    seqOut=seqIn
+    seq_length = len(seq_list[0])
+    output_contig = input_contig
+
     # Left edge of the connected chain
-    leftEdge=str(seqList[seqIn[0][0]].seq)[0:w]
+    left_edge = str(seq_list[input_contig[0][0]])[0:w]
     #right edge of the connected chain
-    rightEdge=str(seqList[seqIn[-1][0]].seq)[-w:]
+    right_edge=str(seq_list[input_contig[-1][0]])[-w:]
         
-    if (sufDict.get(leftEdge) != None):
+    if (suf_dict.get(left_edge) != None):
     #avoid key error
-        if (len(sufDict[leftEdge])==1):
+        if (len(suf_dict[left_edge]) == 1):
         # meaning found unique contigs to stitch to the left
-            seqOut.insert(0,(sufDict[leftEdge][0],(0,seqLength-w)))
+            output_contig.insert(0,(suf_dict[left_edge][0], (0, seq_length - w)))
     
-    if (preDict.get(rightEdge) != None):    
+    if (pre_dict.get(right_edge) != None):    
     #avoid key error
-        if (len(preDict[rightEdge])==1):
+        if (len(pre_dict[right_edge]) == 1):
         # meaning found unique contigs to stitch to the right
-            seqOut.append((preDict[rightEdge][0],(w,seqLength)))
+            output_contig.append((pre_dict[right_edge][0], (w, seq_length)))
         
-    return seqOut
+    return output_contig
     
     
-def stitchContigs(seqList,w):
+def assemble_genome(seq_list, w):
     '''Main function that build up the full contigs
     seqList: fasta file that was read in using the read function
     This outputs a dictionary saying how many contigs it forms and how is it finally connected
     '''
-    nodeQueue=set(range(len(seqList))); output_dict={}
-    nodeCount=1
-    preInxDict=createPreInxDict(seqList,w,pre=True)
-    sufInxDict=createPreInxDict(seqList,w,pre=False)
+    node_queue = set(range(len(seq_list)))
+    output_dict = {}
+    n_nodes = 1
 
-    while nodeQueue:
+    prefix_dict = create_prefix_dict(seq_list, w, pre=True)
+    suffix_dict = create_prefix_dict(seq_list, w, pre=False)
+
+    while node_queue:
         #randomly pick a starting point
-        startSeq=nodeQueue.pop(); seqIn=[(startSeq,(0,len(seqList[startSeq])))]
-        expandContig=connect2Contigs(seqList,seqIn,preInxDict,sufInxDict,w)
+        start_seq = node_queue.pop()
+        seq_in = [(start_seq, (0, len(seq_list[start_seq])))]
+        expand_contig = connect_contig(seq_list, seq_in, prefix_dict, suffix_dict, w)
         
-        while (expandContig != seqIn):
+        while (expand_contig != seq_in):
             # we can still expand
-            seqIn=expandContig
-            expandContig=connect2Contigs(seqList,seqIn,preInxDict,sufInxDict,w)
+            seq_in = expand_contig
+            expand_contig = connect_contig(seq_list, seq_in, prefix_dict, suffix_dict, w)
         
-        output_dict[nodeCount]=expandContig
+        output_dict[n_nodes] = expand_contig
         
         #remove the connected nodes from the two dicts and nodeQueue
-        usedNodeList=[k[0] for k in expandContig]
-        for key in preInxDict:
-            preInxDict[key]=list(set(preInxDict[key])-set(usedNodeList))
-        for key in sufInxDict:
-            sufInxDict[key]=list(set(sufInxDict[key])-set(usedNodeList))
+        used_node_list = [k[0] for k in expand_contig]
+        for key in prefix_dict:
+            prefix_dict[key] = list(set(prefix_dict[key]) - set(used_node_list))
+        for key in suffix_dict:
+            suffix_dict[key]=list(set(suffix_dict[key]) - set(used_node_list))
 
-        nodeQueue=nodeQueue.difference(set(usedNodeList))
-        nodeCount+=1
+        node_queue = node_queue.difference(set(used_node_list))
+        n_nodes += 1
 
     return output_dict
 
 
-#minmal example to run
-if False:
+if __name__ == '__main__':
     #minimal eg
     #CATTCGAATA
+
+    random_genome_filename = 'randomGenome.fa'
+    bacteria_genome_filename = 'bacteria_5_3061335.fa'
+
+    records, output_filename = generate_reads(random_genome_filename, 5, 1)
+
+    # print(records)
+    assemble_genome(records, 5)
+
+
     seqList=[SeqIO.FastaIO.SeqRecord(seq=Seq('TTC'),id='Read0'),SeqIO.FastaIO.SeqRecord(seq=Seq('ATT'),id='Read1'),
              SeqIO.FastaIO.SeqRecord(seq=Seq('GAA'),id='Read2'),SeqIO.FastaIO.SeqRecord(seq=Seq('TCG'),id='Read3'),
              SeqIO.FastaIO.SeqRecord(seq=Seq('CAT'),id='Read4'),SeqIO.FastaIO.SeqRecord(seq=Seq('AAT'),id='Read5')]
     #b/c both Read4 and Read5 contains AT, we shouldn't stitch either onto Read1
     w=2
-    stitchContigs(seqList,w)
+    assemble_genome(seqList,w)
 
 # To note: How to actually get the sequence
 # Add a function that acutally writes out the letters
