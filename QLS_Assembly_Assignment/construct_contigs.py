@@ -17,7 +17,7 @@ from assembly import generate_reads
 def create_prefix_dict(seq_list, w, pre=True):
     '''
     This makes use of the 'Prefix Index' to construct overlap dictionary
-    seqList: list of SeqRecord objects that stores all the reads
+    seq_list: list of SeqRecord objects that stores all the reads
     w: int; how many chars used as prefix/suffix to define overlap
     pre: Boolean. Default=True. Will do prefix if true and suffix otherwise.
     This will return a dictionary recording the preInx
@@ -46,12 +46,12 @@ def connect_contig(seq_list, input_contig, pre_dict, suf_dict, w):
     This function connects 2 sequence together if they overlap
     it will return the coordinates where the cutoff point is.
     This function assumed the overlap exists.
-    seqList: list of SeqRecord objects that stores all the reads
-    seqIn: The current connected chain
-    preDict,sufDict: Prefix dictionary and suffix dictionary created
+    seq_list: list of SeqRecord objects that stores all the reads
+    seq_in: The current connected chain
+    pre_dict, suf_dict: Prefix dictionary and suffix dictionary created
     w: int; how many chars used as prefix/suffix to define overlap. Passed down
-    This will return a list where each element is in the format of [(read#,(startInx,endInx))]
-    Indices are following py convention so [startInx,endInx)
+    This will return a list where each element is in the format of [(read#,(start_idx, end_idx))]
+    Indices are following py convention so [start_idx, end_idx)
     '''
     
     #We are using the fact that all sequence in seqList has the same length
@@ -80,7 +80,7 @@ def connect_contig(seq_list, input_contig, pre_dict, suf_dict, w):
     
 def assemble_genome(seq_list, w):
     '''Main function that build up the full contigs
-    seqList: fasta file that was read in using the read function
+    seq_list: fasta file that was read in using the read function
     This outputs a dictionary saying how many contigs it forms and how is it finally connected
     '''
     node_queue = set(range(len(seq_list)))
@@ -125,16 +125,19 @@ if __name__ == '__main__':
 
     records, output_filename = generate_reads(random_genome_filename, 5, 1)
 
-    # print(records)
-    assemble_genome(records, 5)
+    print('Assembling contigs from', len(records), 'records')
+    contigs = assemble_genome(records, 5)
 
+
+    print('Assembled', len(contigs), 'contigs:')
+    print(contigs)
 
     seqList=[SeqIO.FastaIO.SeqRecord(seq=Seq('TTC'),id='Read0'),SeqIO.FastaIO.SeqRecord(seq=Seq('ATT'),id='Read1'),
              SeqIO.FastaIO.SeqRecord(seq=Seq('GAA'),id='Read2'),SeqIO.FastaIO.SeqRecord(seq=Seq('TCG'),id='Read3'),
              SeqIO.FastaIO.SeqRecord(seq=Seq('CAT'),id='Read4'),SeqIO.FastaIO.SeqRecord(seq=Seq('AAT'),id='Read5')]
     #b/c both Read4 and Read5 contains AT, we shouldn't stitch either onto Read1
-    w=2
-    assemble_genome(seqList,w)
+    w = 2
+    assemble_genome(seq_list, w)
 
 # To note: How to actually get the sequence
 # Add a function that acutally writes out the letters
