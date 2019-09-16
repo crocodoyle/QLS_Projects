@@ -9,27 +9,19 @@ library(seqinr)
 RG<-read.fasta(file = "C:/Users/User/OneDrive - McGill University/Courses/1 - 1F - Foudations of Quantitative Life Sciences I/randomGenome.fasta",as.string = F)
 ## Get Genome Length ####
 GL<-length(RG[[1]])
-GL<-100 # Genome length
-G<-RG[[1]][1:GL] # Select a subpart of RG 
-GP<-G[1]
-i<-1
-
-for (i in 1:(GL-1)){
-  GP<-paste(GP,G[i+1],sep = "")
-  i<-i+1
-  #print(GP)
-}
-# and turn this list into a character
+GL<-1000 # Genome length
+G<-paste0(RG[[1]][1:GL],collapse = "") # Select a subpart of RG and turn this list into a character
 NR<-GL/10;NR # Number of reads
 RP<-sample(1:GL, NR, replace=T);RP # Read Positions
-RLAve<-15 # Read length average
-RLVar<-2 # Read length variance
+RLAve<-20 # Read length average
+RLVar<-0 # Read length variance
 RL<-round(rnorm(NR,RLAve,RLVar), 0);RL # Read lengths
 C<-(sum(RL)/GL);C # Coverage
 ## Alternative: Number of reads depending on the desired coverage ##
 #C<-5 # Desired Coverage
 #NR<-GL*C/RL;NR # Number of reads
 Reads<-list()# Create list of reads
+i<-1
 for(i in 1:NR) {
   Reads[[i]]<-G[RP[i]:(RP[i]+RL[i])]
 }
