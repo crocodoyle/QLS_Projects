@@ -1,7 +1,7 @@
 ## Genome Assembly in R 
 ## Rodrigo Migueles
 ## QLS FOundations
-##
+## Install packages
 install.packages("seqinr")
 library(seqinr)
 ## Read Fasta File ####
