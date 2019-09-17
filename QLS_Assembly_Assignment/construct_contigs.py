@@ -11,8 +11,11 @@ from Bio.Seq import Seq
 import numpy as np
 import itertools
 import re
+import argparse
+
 
 from assembly import generate_reads
+
 
 def create_prefix_dict(seq_list, w, pre=True):
     '''
@@ -117,16 +120,28 @@ def assemble_genome(seq_list, w):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
     #minimal eg
     #CATTCGAATA
 
     random_genome_filename = 'randomGenome.fa'
     bacteria_genome_filename = 'bacteria_5_3061335.fa'
 
-    records, output_filename = generate_reads(random_genome_filename, 5, 1)
+
+    read_length = 30
+    coverage = 5
+
+    genome_len = 39000
+
+    w = np.log10(genome_len / coverage) / np.log10(4)
+    print('w:', w, int(w))
+    w = int(w)
+
+    records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
 
     print('Assembling contigs from', len(records), 'records')
-    contigs = assemble_genome(records, 5)
+    contigs = assemble_genome(records, w)
 
 
     print('Assembled', len(contigs), 'contigs:')
