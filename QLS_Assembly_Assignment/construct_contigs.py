@@ -172,6 +172,17 @@ def outputSequence(seq_key,seq_list,output_dict):
     return outSeq
 
 
+def compare_parameters(coverages, read_lengths):
+    n50s = []
+
+    for read_length in read_lengths:
+        for coverage in coverages:
+            fig, axes = plt.subplots(1, len(coverages))
+
+            genome_len, records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
+
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -200,18 +211,12 @@ if __name__ == '__main__':
 
     print('Assembled', len(contigs), 'contigs:')
     #print(contigs)
-    
 
     # To note: How to actually get the sequence
     # Add a function that acutally writes out the letters
     f=open('assembled_contigs.fa','w')
     for contig in contigs:
-<<<<<<< HEAD
         f.write('>Contig'+str(contig)+'\n')
         f.write(str(outputSequence(contig,records,contigs))+'\n')
-=======
-        f.write('>Contig' + contig + '\n')
-        f.write(str(outputSequence, records, contigs))
->>>>>>> f6f1a7994dbedcb04b6283b20753339f3cef0e8a
         
     f.close()
