@@ -25,14 +25,20 @@ def compare_parameters(coverages, read_lengths):
             w = int(np.log10(len(genome) / coverage) / np.log10(4))
 
             contigs = assemble_genome(records, w)
+            out_seq = []
+            for contig in contigs:
+               out_seq.append(outputSequence(contig, records, contigs))
 
-            n_contigs.append(len(contigs))
-            n50s.append(n50(contigs, genome_len))
 
-            frac, contig_err_rate = frac_covered_in_genome(contigs, genome)
+            n_contigs.append(len(out_seq))
+            print('Number of contigs:', len(out_seq))
 
-            genome_covered.append(frac)
-            erroneous_contigs.append(contig_err_rate)
+            n50s.append(n50(out_seq, len(genome)))
+
+            frac_covered, err_rate = frac_covered_in_genome(out_seq, genome)
+
+            genome_covered.append(frac_covered)
+            erroneous_contigs.append(err_rate)
 
         fig, ax = plt.subplots(1, 4, figsize=(12, 4), dpi=300)
 
@@ -54,15 +60,18 @@ def compare_parameters(coverages, read_lengths):
 
         plt.plot(n_contigs, coverage)
         plt.show()
-        plt.savefig(str(read_length) + '_stats.png', dpi=300)
-        plt.close()
+        fig.savefig(str(read_length) + '_stats.png', dpi=300)
 
 def n50(contigs, genome_len):
     contig_lengths = []
     for contig in contigs:
-        contig_lengths.append(len(contig))
+        contig_lengths.append(len(str(contig)))
 
-    contig_lengths = contig_lengths.sort(reverse=True)
+    print('contig lengths:', contig_lengths)
+
+    contig_lengths.sort(reverse=True)
+
+    print('contig lengths', contig_lengths)
 
     running_length = 0
     for contig_len in contig_lengths:
@@ -113,4 +122,4 @@ def generate_reads(fasta_filename, read_length, coverage=2):
 
     fasta_writer.write_file(records)
 
-    return len(genome), records, output_filename
+    return genome, records, output_filename

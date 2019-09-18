@@ -17,49 +17,10 @@ import time
 import matplotlib.pyplot as plt
 
 import os
-os.chdir('D:\\xbw\\my docs\\McGill\\OneDrive - McGill University\\year1\\QLSC600\\module1\\hw1')
+# os.chdir('D:\\xbw\\my docs\\McGill\\OneDrive - McGill University\\year1\\QLSC600\\module1\\hw1')
 
+from assembly import *
 
-def generate_reads(fasta_filename, read_length, coverage=2):
-    '''Reads a fasta file and generates a bunch of fake reads, outputing them to another fasta file'''
-
-    # Read and parse the input fasta file
-    parser = SeqIO.parse(fasta_filename, "fasta")
-
-    for record in parser:
-        genome = record.seq
-
-    # Generate fake reads
-
-
-    print('Length of genome:', len(genome))
-    print('Read length inputted:', read_length)
-    print('Coverage inputted:', coverage)
-    num_reads = int((len(genome) * coverage) // read_length)
-
-    print('Number of reads:', num_reads)
-
-    # valid starting locations are from 0 to len(genome) - read_length
-    starting_locations = np.random.randint(0, len(genome)-read_length, num_reads)
-
-    records = []
-    for i, starting_location in enumerate(starting_locations):
-        fake_read = genome[starting_location:starting_location+read_length]
-
-        fake_record = SeqIO.FastaIO.SeqRecord(fake_read, 'Read' + str(i), '', '')
-
-        records.append(fake_record)
-
-    # Generate an output filename from the input filename
-    tokens = fasta_filename.split('.')
-    output_filename = tokens[0] + '_output_reads.fa'
-
-    # Write to file!
-    fasta_writer = SeqIO.FastaIO.FastaWriter(open(output_filename, 'w'))
-
-    fasta_writer.write_file(records)
-
-    return genome, records, output_filename
 
 def create_prefix_dict(seq_list, w, pre=True):
     '''
@@ -184,7 +145,7 @@ def frac_covered_in_genome(outSeq,genome):
             foundPos[startInx:startInx+len(contig)]=[1]*len(contig)
         except ValueError:
             errorCounter += 1
-    return sum(foundPos)/len(genome), errorCounter
+    return sum(foundPos)/len(genome), errorCounter / len(outSeq)
     
     
 
@@ -201,26 +162,29 @@ if __name__ == '__main__':
     read_length = 100
     coverage = 10
 
-    genome, records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
-    genome_len=len(genome)
-    w = np.log10(genome_len / coverage) / np.log10(4)
-    print('w:', w, int(w))
-    w = int(w)
-    print('w is now used as:', w)
-    
-    
-    print('Assembling contigs from', len(records), 'records')
-    startTime=time.time()
-    contigs = assemble_genome(records, w)
-    print("Took %s seconds to run" % (time.time() - startTime))
+    # genome, records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
+    # genome_len=len(genome)
+    # w = np.log10(genome_len / coverage) / np.log10(4)
+    # print('w:', w, int(w))
+    # w = int(w)
+    # print('w is now used as:', w)
+    #
+    #
+    # print('Assembling contigs from', len(records), 'records')
+    # startTime=time.time()
+    # contigs = assemble_genome(records, w)
+    # print("Took %s seconds to run" % (time.time() - startTime))
+    #
+    # print('Assembled', len(contigs), 'contigs:')
+    # #print(contigs)
+    # outSeq=[]
+    # for contig in contigs:
+    #     outSeq.append(outputSequence(contig,records,contigs))
 
-    print('Assembled', len(contigs), 'contigs:')
-    #print(contigs)
-    outSeq=[]
-    for contig in contigs:
-        outSeq.append(outputSequence(contig,records,contigs))
-    
+    coverages = [1, 5, 10]
+    read_lengths = [100]
 
+    compare_parameters(coverages, read_lengths)
     
     # To note: How to actually get the sequence
     # Add a function that acutally writes out the letters
