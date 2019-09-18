@@ -40,27 +40,26 @@ def compare_parameters(coverages, read_lengths):
             genome_covered.append(frac_covered)
             erroneous_contigs.append(err_rate)
 
-        fig, ax = plt.subplots(1, 4, figsize=(12, 4), dpi=300)
+        fig, ax = plt.subplots(1, 4, figsize=(18, 6), dpi=300)
 
-        ax[0].plot(n_contigs, coverage)
+        ax[0].plot(coverages, n_contigs)
         ax[0].set_xlabel('Coverage', fontsize=16)
         ax[0].set_ylabel('# contigs', fontsize=16)
 
-        ax[1].plot(n50s, coverage)
+        ax[1].plot(coverages, n50s)
         ax[1].set_xlabel('Coverage', fontsize=16)
         ax[1].set_ylabel('N50', fontsize=16)
 
-        ax[2].plot(genome_covered, coverage)
+        ax[2].plot(coverages, genome_covered)
         ax[2].set_xlabel('Coverage', fontsize=16)
         ax[2].set_ylabel('Fraction of bps in a contig', fontsize=16)
 
-        ax[3].plot(erroneous_contigs, coverage)
+        ax[3].plot(coverages, erroneous_contigs)
         ax[3].set_xlabel('Coverage', fontsize=16)
         ax[3].set_ylabel('Contig Error Rate', fontsize=16)
 
-        plt.plot(n_contigs, coverage)
         plt.show()
-        fig.savefig(str(read_length) + '_stats.png', dpi=300)
+        fig.savefig('C:/Users/doyle/Documents/QLS_Projects/' + str(read_length) + '_stats.png', dpi=300)
 
 def n50(contigs, genome_len):
     contig_lengths = []

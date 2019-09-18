@@ -181,8 +181,8 @@ if __name__ == '__main__':
     # for contig in contigs:
     #     outSeq.append(outputSequence(contig,records,contigs))
 
-    coverages = [1, 5, 10]
-    read_lengths = [100]
+    coverages = [1, 5, 10, 20, 50]
+    read_lengths = [100, 10000]
 
     compare_parameters(coverages, read_lengths)
     
