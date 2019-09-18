@@ -12,8 +12,9 @@ import numpy as np
 import itertools
 import re
 import argparse
-
-
+import time
+import os
+os.chdir('D:\\documents\\GitHub\\QLS_Projects\\QLS_Assembly_Assignment')
 from assembly import generate_reads
 
 
@@ -30,10 +31,10 @@ def create_prefix_dict(seq_list, w, pre=True):
     for seq_idx, seq in enumerate(seq_list):
         if pre:
             #first w chars
-            prefix_idx = str(seq[0:w])
+            prefix_idx = str(seq.seq[0:w])
         else:
             #last w chars
-            prefix_idx = str(seq[-w:])
+            prefix_idx = str(seq.seq[-w:])
             
         if prefix_idx in out_dict:
             out_dict[prefix_idx].append(seq_idx)
@@ -62,9 +63,9 @@ def connect_contig(seq_list, input_contig, pre_dict, suf_dict, w):
     output_contig = input_contig
 
     # Left edge of the connected chain
-    left_edge = str(seq_list[input_contig[0][0]])[0:w]
+    left_edge = str(seq_list[input_contig[0][0]].seq)[0:w]
     #right edge of the connected chain
-    right_edge=str(seq_list[input_contig[-1][0]])[-w:]
+    right_edge=str(seq_list[input_contig[-1][0]].seq)[-w:]
         
     if (suf_dict.get(left_edge) != None):
     #avoid key error
@@ -118,6 +119,17 @@ def assemble_genome(seq_list, w):
 
     return output_dict
 
+def outputSequence(seq_key,seq_list,output_dict):
+    '''
+    Take the key of the output_dict and output the actual sequence that's stitched
+    '''
+    seq_coord=output_dict[seq_key]  
+    outSeq=''
+    for piece in seq_coord:
+        outSeq += seq_list[piece[0]][piece[1][0]:piece[1][1]]
+    
+    return outSeq
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -129,30 +141,31 @@ if __name__ == '__main__':
     bacteria_genome_filename = 'bacteria_5_3061335.fa'
 
 
-    read_length = 30
-    coverage = 5
+    read_length = 100
+    coverage = 10
 
-    genome_len = 39000
+    genome_len,records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
 
     w = np.log10(genome_len / coverage) / np.log10(4)
     print('w:', w, int(w))
     w = int(w)
-
-    records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
-
+    print('w is now used as:', w)
+    
+    
     print('Assembling contigs from', len(records), 'records')
+    startTime=time.time()
     contigs = assemble_genome(records, w)
-
+    print("Took %s seconds to run" % (time.time() - startTime))
 
     print('Assembled', len(contigs), 'contigs:')
-    print(contigs)
+    #print(contigs)
+    
 
-    seq_list=[SeqIO.FastaIO.SeqRecord(seq=Seq('TTC'),id='Read0'),SeqIO.FastaIO.SeqRecord(seq=Seq('ATT'),id='Read1'),
-             SeqIO.FastaIO.SeqRecord(seq=Seq('GAA'),id='Read2'),SeqIO.FastaIO.SeqRecord(seq=Seq('TCG'),id='Read3'),
-             SeqIO.FastaIO.SeqRecord(seq=Seq('CAT'),id='Read4'),SeqIO.FastaIO.SeqRecord(seq=Seq('AAT'),id='Read5')]
-    #b/c both Read4 and Read5 contains AT, we shouldn't stitch either onto Read1
-    w = 2
-    assemble_genome(seq_list, w)
-
-# To note: How to actually get the sequence
-# Add a function that acutally writes out the letters
+    # To note: How to actually get the sequence
+    # Add a function that acutally writes out the letters
+    f=open('assembled_contigs.fa','w')
+    for contig in contigs:
+        f.write('>Contig'+contig+'\n')
+        f.write(str(outputSequence,records,contigs))
+        
+    f.close()

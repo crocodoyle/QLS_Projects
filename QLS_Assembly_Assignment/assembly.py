@@ -18,7 +18,8 @@ def generate_reads(fasta_filename, read_length, coverage=2):
 
 
     print('Length of genome:', len(genome))
-
+    print('Read length inputted:', read_length)
+    print('Coverage inputted:', coverage)
     num_reads = int((len(genome) * coverage) // read_length)
 
     print('Number of reads:', num_reads)
@@ -43,4 +44,4 @@ def generate_reads(fasta_filename, read_length, coverage=2):
 
     fasta_writer.write_file(records)
 
-    return records, output_filename
+    return len(genome), records, output_filename
