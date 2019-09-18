@@ -206,7 +206,12 @@ if __name__ == '__main__':
     # Add a function that acutally writes out the letters
     f=open('assembled_contigs.fa','w')
     for contig in contigs:
+<<<<<<< HEAD
         f.write('>Contig'+str(contig)+'\n')
         f.write(str(outputSequence(contig,records,contigs))+'\n')
+=======
+        f.write('>Contig' + contig + '\n')
+        f.write(str(outputSequence, records, contigs))
+>>>>>>> f6f1a7994dbedcb04b6283b20753339f3cef0e8a
         
     f.close()
