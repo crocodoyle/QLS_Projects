@@ -13,10 +13,51 @@ import itertools
 import re
 import argparse
 import time
-import os
-os.chdir('D:\\documents\\GitHub\\QLS_Projects\\QLS_Assembly_Assignment')
-from assembly import generate_reads
 
+import os
+os.chdir('D:\\xbw\\my docs\\McGill\\OneDrive - McGill University\\year1\\QLSC600\\module1\\hw1')
+
+
+def generate_reads(fasta_filename, read_length, coverage=2):
+    '''Reads a fasta file and generates a bunch of fake reads, outputing them to another fasta file'''
+
+    # Read and parse the input fasta file
+    parser = SeqIO.parse(fasta_filename, "fasta")
+
+    for record in parser:
+        genome = record.seq
+
+    # Generate fake reads
+
+
+    print('Length of genome:', len(genome))
+    print('Read length inputted:', read_length)
+    print('Coverage inputted:', coverage)
+    num_reads = int((len(genome) * coverage) // read_length)
+
+    print('Number of reads:', num_reads)
+
+    # valid starting locations are from 0 to len(genome) - read_length
+    starting_locations = np.random.randint(0, len(genome)-read_length, num_reads)
+
+    records = []
+    for i, starting_location in enumerate(starting_locations):
+        fake_read = genome[starting_location:starting_location+read_length]
+
+        fake_record = SeqIO.FastaIO.SeqRecord(fake_read, 'Read' + str(i), '', '')
+
+        records.append(fake_record)
+
+    # Generate an output filename from the input filename
+    tokens = fasta_filename.split('.')
+    output_filename = tokens[0] + '_output_reads.fa'
+
+    # Write to file!
+    fasta_writer = SeqIO.FastaIO.FastaWriter(open(output_filename, 'w'))
+
+    fasta_writer.write_file(records)
+
+    return len(genome), records, output_filename
 
 def create_prefix_dict(seq_list, w, pre=True):
     '''
@@ -126,7 +167,7 @@ def outputSequence(seq_key,seq_list,output_dict):
     seq_coord=output_dict[seq_key]  
     outSeq=''
     for piece in seq_coord:
-        outSeq += seq_list[piece[0]][piece[1][0]:piece[1][1]]
+        outSeq += seq_list[piece[0]].seq[piece[1][0]:piece[1][1]]
     
     return outSeq
 
@@ -137,7 +178,7 @@ if __name__ == '__main__':
     #minimal eg
     #CATTCGAATA
 
-    random_genome_filename = 'randomGenome.fa'
+    random_genome_filename = 'test1.fa'
     bacteria_genome_filename = 'bacteria_5_3061335.fa'
 
 
@@ -165,7 +206,7 @@ if __name__ == '__main__':
     # Add a function that acutally writes out the letters
     f=open('assembled_contigs.fa','w')
     for contig in contigs:
-        f.write('>Contig'+contig+'\n')
-        f.write(str(outputSequence,records,contigs))
+        f.write('>Contig'+str(contig)+'\n')
+        f.write(str(outputSequence(contig,records,contigs))+'\n')
         
     f.close()
