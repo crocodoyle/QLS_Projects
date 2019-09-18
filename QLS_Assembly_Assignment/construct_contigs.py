@@ -19,15 +19,15 @@ from assembly import generate_reads
 
 
 def create_prefix_dict(seq_list, w, pre=True):
-    '''
+    """
     This makes use of the 'Prefix Index' to construct overlap dictionary
     seq_list: list of SeqRecord objects that stores all the reads
     w: int; how many chars used as prefix/suffix to define overlap
     pre: Boolean. Default=True. Will do prefix if true and suffix otherwise.
     This will return a dictionary recording the preInx
-    '''
+    """
     out_dict = {}
-    #Each fake read is ordered so ReadX is just X element in the list
+    # Each fake read is ordered so ReadX is just X element in the list
     for seq_idx, seq in enumerate(seq_list):
         if pre:
             #first w chars
@@ -95,19 +95,19 @@ def assemble_genome(seq_list, w):
     suffix_dict = create_prefix_dict(seq_list, w, pre=False)
 
     while node_queue:
-        #randomly pick a starting point
+        # randomly pick a starting point
         start_seq = node_queue.pop()
         seq_in = [(start_seq, (0, len(seq_list[start_seq])))]
         expand_contig = connect_contig(seq_list, seq_in, prefix_dict, suffix_dict, w)
         
-        while (expand_contig != seq_in):
+        while expand_contig != seq_in:
             # we can still expand
             seq_in = expand_contig
             expand_contig = connect_contig(seq_list, seq_in, prefix_dict, suffix_dict, w)
         
         output_dict[n_nodes] = expand_contig
         
-        #remove the connected nodes from the two dicts and nodeQueue
+        # remove the connected nodes from the two dicts and nodeQueue
         used_node_list = [k[0] for k in expand_contig]
         for key in prefix_dict:
             prefix_dict[key] = list(set(prefix_dict[key]) - set(used_node_list))
@@ -118,6 +118,7 @@ def assemble_genome(seq_list, w):
         n_nodes += 1
 
     return output_dict
+
 
 def outputSequence(seq_key,seq_list,output_dict):
     '''
@@ -134,38 +135,35 @@ def outputSequence(seq_key,seq_list,output_dict):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    #minimal eg
-    #CATTCGAATA
+    # minimal eg
+    # CATTCGAATA
 
     random_genome_filename = 'randomGenome.fa'
     bacteria_genome_filename = 'bacteria_5_3061335.fa'
 
-
     read_length = 100
     coverage = 10
 
-    genome_len,records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
+    genome_len, records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
 
     w = np.log10(genome_len / coverage) / np.log10(4)
     print('w:', w, int(w))
     w = int(w)
     print('w is now used as:', w)
-    
-    
+
     print('Assembling contigs from', len(records), 'records')
     startTime=time.time()
     contigs = assemble_genome(records, w)
     print("Took %s seconds to run" % (time.time() - startTime))
 
     print('Assembled', len(contigs), 'contigs:')
-    #print(contigs)
-    
+    # print(contigs)
 
     # To note: How to actually get the sequence
     # Add a function that acutally writes out the letters
-    f=open('assembled_contigs.fa','w')
+    f = open('assembled_contigs.fa','w')
     for contig in contigs:
-        f.write('>Contig'+contig+'\n')
-        f.write(str(outputSequence,records,contigs))
+        f.write('>Contig' + contig + '\n')
+        f.write(str(outputSequence, records, contigs))
         
     f.close()
