@@ -1,8 +1,77 @@
 from Bio import SeqIO
 import numpy as np
+import matplotlib.pyplot as plt
+
+from construct_contigs import *
+
 
 random_genome_filename = 'randomGenome.fa'
 bacteria_genome_filename = 'bacteria_5_3061335.fa'
+
+
+def compare_parameters(coverages, read_lengths):
+
+    for read_length in read_lengths:
+        n_contigs = []
+        n50s = []
+        genome_covered = []
+        erroneous_contigs = []
+
+        for coverage in coverages:
+            fig, axes = plt.subplots(1, len(coverages))
+
+            genome, records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
+
+            w = int(np.log10(len(genome) / coverage) / np.log10(4))
+
+            contigs = assemble_genome(records, w)
+
+            n_contigs.append(len(contigs))
+            n50s.append(n50(contigs, genome_len))
+
+            frac, contig_err_rate = frac_covered_in_genome(contigs, genome)
+
+            genome_covered.append(frac)
+            erroneous_contigs.append(contig_err_rate)
+
+        fig, ax = plt.subplots(1, 4, figsize=(12, 4), dpi=300)
+
+        ax[0].plot(n_contigs, coverage)
+        ax[0].set_xlabel('Coverage', fontsize=16)
+        ax[0].set_ylabel('# contigs', fontsize=16)
+
+        ax[1].plot(n50s, coverage)
+        ax[1].set_xlabel('Coverage', fontsize=16)
+        ax[1].set_ylabel('N50', fontsize=16)
+
+        ax[2].plot(genome_covered, coverage)
+        ax[2].set_xlabel('Coverage', fontsize=16)
+        ax[2].set_ylabel('Fraction of bps in a contig', fontsize=16)
+
+        ax[3].plot(erroneous_contigs, coverage)
+        ax[3].set_xlabel('Coverage', fontsize=16)
+        ax[3].set_ylabel('Contig Error Rate', fontsize=16)
+
+        plt.plot(n_contigs, coverage)
+        plt.show()
+        plt.savefig(str(read_length) + '_stats.png', dpi=300)
+        plt.close()
+
+def n50(contigs, genome_len):
+    contig_lengths = []
+    for contig in contigs:
+        contig_lengths.append(len(contig))
+
+    contig_lengths = contig_lengths.sort(reverse=True)
+
+    running_length = 0
+    for contig_len in contig_lengths:
+        running_length += contig_len
+        if running_length > genome_len / 2:
+            return contig_len
+
+
+
 
 
 def generate_reads(fasta_filename, read_length, coverage=2):
