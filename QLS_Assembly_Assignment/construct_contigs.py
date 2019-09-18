@@ -7,12 +7,14 @@ Created on Sat Sep 14 22:05:09 2019
 
 from Bio import SeqIO
 from Bio.Seq import Seq
+from Bio import pairwise2
 
 import numpy as np
 import itertools
 import re
 import argparse
 import time
+import matplotlib.pyplot as plt
 
 import os
 os.chdir('D:\\xbw\\my docs\\McGill\\OneDrive - McGill University\\year1\\QLSC600\\module1\\hw1')
@@ -57,7 +59,7 @@ def generate_reads(fasta_filename, read_length, coverage=2):
 
     fasta_writer.write_file(records)
 
-    return len(genome), records, output_filename
+    return genome, records, output_filename
 
 def create_prefix_dict(seq_list, w, pre=True):
     '''
@@ -171,17 +173,20 @@ def outputSequence(seq_key,seq_list,output_dict):
     
     return outSeq
 
-
-def compare_parameters(coverages, read_lengths):
-    n50s = []
-
-    for read_length in read_lengths:
-        for coverage in coverages:
-            fig, axes = plt.subplots(1, len(coverages))
-
-            genome_len, records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
-
-
+def frac_covered_in_genome(outSeq,genome):
+    """
+    Calculated what percentage of genome is covered by the union of the constructed contigs
+    """
+    foundPos=[0]*len(genome); errorCounter=0
+    for contig in outSeq:
+        try:
+            startInx=str(genome).index(str(contig))
+            foundPos[startInx:startInx+len(contig)]=[1]*len(contig)
+        except ValueError:
+            errorCounter += 1
+    return sum(foundPos)/len(genome), errorCounter
+    
+    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -196,8 +201,8 @@ if __name__ == '__main__':
     read_length = 100
     coverage = 10
 
-    genome_len,records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
-
+    genome, records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
+    genome_len=len(genome)
     w = np.log10(genome_len / coverage) / np.log10(4)
     print('w:', w, int(w))
     w = int(w)
@@ -211,12 +216,18 @@ if __name__ == '__main__':
 
     print('Assembled', len(contigs), 'contigs:')
     #print(contigs)
+    outSeq=[]
+    for contig in contigs:
+        outSeq.append(outputSequence(contig,records,contigs))
+    
 
+    
     # To note: How to actually get the sequence
     # Add a function that acutally writes out the letters
-    f=open('assembled_contigs.fa','w')
-    for contig in contigs:
-        f.write('>Contig'+str(contig)+'\n')
-        f.write(str(outputSequence(contig,records,contigs))+'\n')
+    if False:
+        f=open('assembled_contigs.fa','w')
+        for contig in contigs:
+            f.write('>Contig'+str(contig)+'\n')
+            f.write(str(outputSequence(contig,records,contigs))+'\n')
         
-    f.close()
+        f.close()
