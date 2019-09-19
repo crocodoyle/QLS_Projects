@@ -18,8 +18,6 @@ def compare_parameters(coverages, read_lengths):
         erroneous_contigs = []
 
         for coverage in coverages:
-            fig, axes = plt.subplots(1, len(coverages))
-
             genome, records, output_filename = generate_reads(random_genome_filename, read_length, coverage)
 
             w = int(np.log10(len(genome) / coverage) / np.log10(4))
@@ -40,7 +38,13 @@ def compare_parameters(coverages, read_lengths):
             genome_covered.append(frac_covered)
             erroneous_contigs.append(err_rate)
 
-        fig, ax = plt.subplots(1, 4, figsize=(18, 6), dpi=300)
+        print('Coverage:', coverages)
+        print('Number of contigs:', n_contigs)
+        print('N50s:', n50s)
+        print('Genome Covered:', frac_covered)
+        print('Error Rate:', erroneous_contigs)
+
+        fig, ax = plt.subplots(1, 4, figsize=(32, 6), dpi=300)
 
         ax[0].plot(coverages, n_contigs)
         ax[0].set_xlabel('Coverage', fontsize=16)
@@ -59,6 +63,7 @@ def compare_parameters(coverages, read_lengths):
         ax[3].set_ylabel('Contig Error Rate', fontsize=16)
 
         plt.show()
+        # plt.tight_layout()
         fig.savefig('C:/Users/doyle/Documents/QLS_Projects/' + str(read_length) + '_stats.png', dpi=300)
 
 def n50(contigs, genome_len):
@@ -66,11 +71,7 @@ def n50(contigs, genome_len):
     for contig in contigs:
         contig_lengths.append(len(str(contig)))
 
-    print('contig lengths:', contig_lengths)
-
-    contig_lengths.sort(reverse=True)
-
-    print('contig lengths', contig_lengths)
+    contig_lengths.sort(reverse=True) # inplace!
 
     running_length = 0
     for contig_len in contig_lengths:
