@@ -64,7 +64,7 @@ def compare_parameters(coverages, read_lengths):
 
         plt.show()
         # plt.tight_layout()
-        fig.savefig('C:/Users/doyle/Documents/QLS_Projects/' + str(read_length) + '_bacteria_stats.png', dpi=300)
+        fig.savefig('**directory**' + str(read_length) + '_bacteria_stats.png', dpi=300)
 
 def n50(contigs, genome_len):
     contig_lengths = []

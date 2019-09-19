@@ -17,7 +17,7 @@ import time
 import matplotlib.pyplot as plt
 
 import os
-# os.chdir('D:\\xbw\\my docs\\McGill\\OneDrive - McGill University\\year1\\QLSC600\\module1\\hw1')
+# os.chdir('**Directory**')
 
 from assembly import *
 
