@@ -6,7 +6,7 @@ from construct_contigs import *
 
 
 random_genome_filename = 'randomGenome.fa'
-bacteria_genome_filename = 'bacteria_5_3061335.fa'
+bacteria_genome_filename = 'bacteria_5_3061335_30k.fa'
 
 
 def compare_parameters(coverages, read_lengths):
@@ -44,7 +44,7 @@ def compare_parameters(coverages, read_lengths):
         print('Genome Covered:', frac_covered)
         print('Error Rate:', erroneous_contigs)
 
-        fig, ax = plt.subplots(1, 4, figsize=(32, 6), dpi=300)
+        fig, ax = plt.subplots(1, 4)
 
         ax[0].plot(coverages, n_contigs)
         ax[0].set_xlabel('Coverage', fontsize=16)
@@ -64,7 +64,7 @@ def compare_parameters(coverages, read_lengths):
 
         plt.show()
         # plt.tight_layout()
-        fig.savefig('C:/Users/doyle/Documents/QLS_Projects/' + str(read_length) + '_stats.png', dpi=300)
+        fig.savefig('C:/Users/doyle/Documents/QLS_Projects/' + str(read_length) + '_bacteria_stats.png', dpi=300)
 
 def n50(contigs, genome_len):
     contig_lengths = []
