@@ -1,6 +1,6 @@
 ---
 title: "Homework2"
-author: "Bowei Xiao"
+author: "Bowei Xiao, Andrew Doyle, Yifei Gu, Rodrigo Migueles-Ramirez"
 date: "20/09/2019"
 header-includes:
   - \usepackage{amsmath}
@@ -15,13 +15,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Calculate Posterior Porbability
 
-Define variables just as what we did in the lecture: Let $\mathbf{D}=\{\mathbf{D_1},\mathbf{D_2},\cdots\,\mathbf{D_n}\}$ be observed genotypes ($\mathbf{D_i}\indep\mathbf{D_j},\ \forall i\ne j$)on one specific genomic position from each reads passing that specific location. Let $\mathbf{R}$ be the reference genotype on this very same position, and $\mathbf{G}$ be underlined true genotype at this same location. Using the above settings, what we are interested in can be expressed as $P(\mathbf{G|D,R})$. Based on Baye's Rule, this can be rephrased as the following:
+Define variables just as what we did in the lecture: Let $\mathbf{D}=\{\mathbf{D_1},\mathbf{D_2},\cdots\,\mathbf{D_n}\}$ be observed genotypes ($\mathbf{D_i}\indep\mathbf{D_j},\ \forall i\ne j$) on one specific genomic position from each reads passing that specific location. Let $\mathbf{R}$ be the reference genotype on this very same position, and $\mathbf{G}$ be the true genotype at this same location. Using the above settings, what we are interested in can be expressed as $P(\mathbf{G|D,R})$. Based on Bayes' Rule, this can be rewritten as:
 \begin{eqnarray*}
-P(\mathbf{G|D,R}|)&=&\frac{P(\mathbf{D|G,R)}*P(\mathbf{G|R}))}{P(\mathbf{D|R})} \\
-&=& \frac{P(\mathbf{D|G})*P(\mathbf{G|R})}{P(\mathbf{D|R})}
+P(\mathbf{G|D,R})&=&\frac{P(\mathbf{D|G,R)}\cdotP(\mathbf{G|R}))}{P(\mathbf{D|R})} \\
+&=& \frac{P(\mathbf{D|G})\cdotP(\mathbf{G|R})}{P(\mathbf{D|R})}
 \end{eqnarray*}
-given that $\mathbf{D}$ and $\mathbf{R}$ are conditional independent on $\mathbf{G}$.\
-Now, for each postion we want to calculate the probability of the true genotye ($\mathbf{G}$) being $xx$ (0 copies of reference allele), $xy$ (1 reference allele), and $yy$ (2 reference allele) given the data.
+since $\mathbf{D}$ and $\mathbf{R}$ are conditionally independent when given $\mathbf{G}$.\
+Now, for each postion $n$ we want to calculate the probability of the true genotype ($\mathbf{G}$) being $xx$ (0 copies of reference allele), $xy$ (1 reference allele), and $yy$ (2 reference allele) given the data $D$.
 \begin{enumerate}
 \item To calculate the first case where $P(\mathbf{G}=xx | \mathbf{D,R=y}) = \frac{P(\mathbf{D|G}=xx)*P(\mathbf{G}=xx|\mathbf{R=y})}{P(\mathbf{D|R=y})}$.
 These three parts can be calculated separately as below:
@@ -29,21 +29,21 @@ These three parts can be calculated separately as below:
 \item
 \begin{eqnarray*}
 P(\mathbf{D|G}=xx) &=& \prod_{i=1}^n P(D_i|\mathbf{G}=xx)\\
-&=& \prod_{\{i|D_i=x\}} P(D_i|\mathbf{G}=xx) * \prod_{\{i|D_i\ne x\}} P(D_i|\mathbf{G=xx})
+&=& \prod_{\{i|D_i=x\}} P(D_i|\mathbf{G}=xx) \prod_{\{i|D_i\ne x\}} P(D_i|\mathbf{G=xx})
 \end{eqnarray*}
-The first probability is simply $(1-\epsilon)$ where as the second probability is $\epsilon$, assuming $\epsilon$ being the error made when genotyping on the read.\
+If we define the probability of a read error as $\epsilon$, the first term of the above expression can be written as $1-\epsilon$ and the second is $\epsilon$.\
 \item $P(\mathbf{G=xx|R=y})$ is simply the frequency of non-reference allele squared ($(1-\rho)^2$) based on Hardy-Weinberg Equilibirum (HWE).
 \item $P(\mathbf{D|R=y})$: This is a scaling constant and does not depend on $\mathbf{G}$, we noted it as $c$ for now. This can be solved (by computer of course) using the fact that $P(\mathbf{G}=xx | \mathbf{D,R=y})+P(\mathbf{G}=xy | \mathbf{D,R=y})+P(\mathbf{G}=yy | \mathbf{D,R=y})=1$
 \end{itemize}
 To sum up, the probability that $P(\mathbf{G}=xx | \mathbf{D,R=y}) = \frac{(1-\rho)^2}{c}\prod_{\{i|D_i=x\}} (1-\epsilon) \prod_{\{i|D_i\ne x\}} \epsilon$.
-\item $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{P(\mathbf{D|G}=xy)*P(\mathbf{G}=xy|\mathbf{R=y})}{P(\mathbf{D|R=y})}$
+\item $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{P(\mathbf{D|G}=xy)\cdotP(\mathbf{G}=xy|\mathbf{R=y})}{P(\mathbf{D|R=y})}$
 \begin{itemize}
 \item 
 \begin{eqnarray*}
 P(\mathbf{D|G}=xy) &=& \prod_{i=1}^n P(D_i|\mathbf{G}=xy)\\
-&=& \prod_{i|D_i\in {x,y}} P(D_i|\mathbf{G}=xy) * \prod_{i|D_i\notin {x,y}} P(D_i|\mathbf{G}=xy)  
-\end{eqnarray*}
-The first probability is $\frac{1}{2}(1-\epsilon)+\frac{\epsilon/3}{2}$ and the second probability is $\frac{\epsilon}{3}$.
+&=& \prod_{i|D_i\in {x,y}} P(D_i|\mathbf{G}=xy) * \prod_{i|D_i\notin {x,y}} P(D_i|\mathbf{G}=xy)
+&=& = \frac{1}{2}(1-\epsilon)+\frac{\epsilon/3}{2} \cdot \frac{\epsilon}{3}
+\end{eqnarray*} 
 \item $P(\mathbf{G=xy|R=y})$ is simply $2*\rho*(1-\rho)$ based on HWE.
 \item $P(\mathbf{D|R=y})$: as before, this is a constant $c$.
 \end{itemize}

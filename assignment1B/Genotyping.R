@@ -10,7 +10,7 @@ library('Rsamtools')
 # Define directories
 getwd()
 # datadir<-"C:/Users/User/Documents/GitHub/QLS_Projects/assignment1B"
-datadir<-"C:/Users/Rodrigo Migueles/Documents/QLS_Projects/assignment1B"
+datadir<-"C:/Users/doyle/Documents/QLS_Projects/assignment1B"
 setwd(datadir)
 
 # Read BAM file and define IGV calls -> C and reads -> D ####
