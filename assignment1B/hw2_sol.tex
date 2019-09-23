@@ -1,0 +1,152 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Homework2},
+            pdfauthor={Bowei Xiao, Andrew Doyle, Yifei Gu, Rodrigo Migueles-Ramirez},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Homework2}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Bowei Xiao, Andrew Doyle, Yifei Gu, Rodrigo Migueles-Ramirez}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{20/09/2019}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\begin{document}
+\maketitle
+
+\newcommand{\indep}{\rotatebox[origin=c]{90}{$\models$}}
+
+\hypertarget{calculate-posterior-porbability}{%
+\subsection{Calculate Posterior
+Porbability}\label{calculate-posterior-porbability}}
+
+Define variables just as what we did in the lecture: Let
+\(\mathbf{D}=\{\mathbf{D_1},\mathbf{D_2},\cdots\,\mathbf{D_n}\}\) be
+observed genotypes
+(\(\mathbf{D_i}\rotatebox[origin=c]{90}{$\models$}\mathbf{D_j},\ \forall i\ne j\))
+on one specific genomic position from each reads passing that specific
+location. Let \(\mathbf{R}\) be the reference genotype on this very same
+position, and \(\mathbf{G}\) be the true genotype at this same location.
+Using the above settings, what we are interested in can be expressed as
+\(P(\mathbf{G|D,R})\). Based on Bayes' Rule, this can be rewritten as:
+\begin{eqnarray*}
+P(\mathbf{G|D,R})&=&\frac{P(\mathbf{D|G,R)}\cdotP(\mathbf{G|R}))}{P(\mathbf{D|R})} \\
+&=& \frac{P(\mathbf{D|G})\cdotP(\mathbf{G|R})}{P(\mathbf{D|R})}
+\end{eqnarray*} since \(\mathbf{D}\) and \(\mathbf{R}\) are
+conditionally independent when given \(\mathbf{G}\).\\
+Now, for each postion \(n\) we want to calculate the probability of the
+true genotype (\(\mathbf{G}\)) being \(xx\) (0 copies of reference
+allele), \(xy\) (1 reference allele), and \(yy\) (2 reference allele)
+given the data \(D\).
+
+\begin{enumerate}
+\item To calculate the first case where $P(\mathbf{G}=xx | \mathbf{D,R=y}) = \frac{P(\mathbf{D|G}=xx)*P(\mathbf{G}=xx|\mathbf{R=y})}{P(\mathbf{D|R=y})}$.
+These three parts can be calculated separately as below:
+\begin{itemize}
+\item
+\begin{eqnarray*}
+P(\mathbf{D|G}=xx) &=& \prod_{i=1}^n P(D_i|\mathbf{G}=xx)\\
+&=& \prod_{\{i|D_i=x\}} P(D_i|\mathbf{G}=xx) \prod_{\{i|D_i\ne x\}} P(D_i|\mathbf{G=xx})
+\end{eqnarray*}
+If we define the probability of a read error as $\epsilon$, the first term of the above expression can be written as $1-\epsilon$ and the second is $\epsilon$.\
+\item $P(\mathbf{G=xx|R=y})$ is simply the frequency of non-reference allele squared ($(1-\rho)^2$) based on Hardy-Weinberg Equilibirum (HWE).
+\item $P(\mathbf{D|R=y})$: This is a scaling constant and does not depend on $\mathbf{G}$, we noted it as $c$ for now. This can be solved (by computer of course) using the fact that $P(\mathbf{G}=xx | \mathbf{D,R=y})+P(\mathbf{G}=xy | \mathbf{D,R=y})+P(\mathbf{G}=yy | \mathbf{D,R=y})=1$
+\end{itemize}
+To sum up, the probability that $P(\mathbf{G}=xx | \mathbf{D,R=y}) = \frac{(1-\rho)^2}{c}\prod_{\{i|D_i=x\}} (1-\epsilon) \prod_{\{i|D_i\ne x\}} \epsilon$.
+\item $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{P(\mathbf{D|G}=xy)\cdotP(\mathbf{G}=xy|\mathbf{R=y})}{P(\mathbf{D|R=y})}$
+\begin{itemize}
+\item 
+\begin{eqnarray*}
+P(\mathbf{D|G}=xy) &=& \prod_{i=1}^n P(D_i|\mathbf{G}=xy)\\
+&=& \prod_{i|D_i\in {x,y}} P(D_i|\mathbf{G}=xy) * \prod_{i|D_i\notin {x,y}} P(D_i|\mathbf{G}=xy)
+&=& = \frac{1}{2}(1-\epsilon)+\frac{\epsilon/3}{2} \cdot \frac{\epsilon}{3}
+\end{eqnarray*} 
+\item $P(\mathbf{G=xy|R=y})$ is simply $2*\rho*(1-\rho)$ based on HWE.
+\item $P(\mathbf{D|R=y})$: as before, this is a constant $c$.
+\end{itemize}
+To sum up, the probability that $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{2*\rho*(1-\rho)}{c} \prod_{\{i|D_i\in {x,y}\}}\frac{1-2/3\epsilon}{2} * \prod_{\{i|D_i\notin {x,y}\}} \frac{\epsilon}{3}$
+\item The last probability $P(\mathbf{G}=yy | \mathbf{D,R=y})$ is very similar to the first case except that $P(\mathbf{G=yy|R=y}) = \rho^2$, and thus the probability is $P(\mathbf{G}=yy | \mathbf{D,R=y}) = \frac{\rho^2}{c}\prod_{\{i|D_i=x\}} (1-\epsilon) \prod_{\{i|D_i\ne x\}} \epsilon$. 
+\end{enumerate}
+
+For the sake of this homework, we can assume \(\rho^2=0.999\) and thus
+\(\rho=0.999\). I think, we might have to estimate \(\epsilon\) from the
+dataset?
+
+
+\end{document}
