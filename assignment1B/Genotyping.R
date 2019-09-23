@@ -7,26 +7,53 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("Rsamtools")
 library('Rsamtools')
 
+BiocManager::install("GenomicTools")
+
+library("seqinr")
+
 # Define directories
 getwd()
 # datadir<-"C:/Users/User/Documents/GitHub/QLS_Projects/assignment1B"
-datadir<-"C:/Users/doyle/Documents/QLS_Projects/assignment1B"
+datadir<-"C:/Users/Rodrigo Migueles/Documents/QLS_Projects/assignment1B"
 setwd(datadir)
 
 # Read BAM file and define IGV calls -> C and reads -> D ####
 bamFile=scanBam('17.41000000-42000000.HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam')
+names(bamFile[[1]]) # Labels or names of the columns in the bam
+lst <- lapply(names(bamFile[[1]]), function(elt) {
+  do.call(c, unname(lapply(bamFile, "[[", elt)))
+})
+names(lst) <- names(bamFile[[1]])
+bamFile_df=do.call("DataFrame", lst)
 
+NR<-length(bamFile[[1]]$pos) # Number of reads
+RP<-bamFile[[1]]$pos # Read positions
+RL<-bamFile[[1]]$qwidth # Read length
+ARP<-RP+RL #Absolute read position
+ReadSequence<-NULL # Assign Read Sequences:
+k<-1
+for (k in (1:NR)) {
+  ReadSequence[k]<-as.character(bamFile[[1]]$seq[k])  
+}
 
 # Read reference genome chr 17 -> G  ####
+Ref<-read.fasta(file = "chr17-Copy.fasta")
+RefLength<-length(Ref[[1]])
+
+# Build huge alignment
+for (h in seq(41000000,42000000,1)) {
+  
+}
+
 
 # Define parameters
-n<-2# Number of reads
+n<-20# Number of reads that cover a given position
 
 # Create G table
-G<-data.frame(matrix(0,4,4))
-names(G) = c("A","C","G","T")
+G<-data.frame(matrix(0,n,10))
+names(G) = c("AA","AC","AG","AT","CC","CG","CT","GG","GT","TT")
 ## Define nucleotide position
-# p<-4563# Nucleotide position
+p<-NULL # Nucleotide position
 # Start big for loop that reads one nucleotide position at the time here.
 PofD<-data.frame(matrix(0,4,4))
 names(PofD) = c("nuc","counts", "probability", "nuc found?")
