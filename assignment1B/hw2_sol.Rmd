@@ -50,4 +50,40 @@ P(\mathbf{D|G}=xy) &=& \prod_{i=1}^n P(D_i|\mathbf{G}=xy)\\
 To sum up, the probability that $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{2*\rho*(1-\rho)}{c} \prod_{\{i|D_i\in {x,y}\}}\frac{1-2/3\epsilon}{2} * \prod_{\{i|D_i\notin {x,y}\}} \frac{\epsilon}{3}$
 \item The last probability $P(\mathbf{G}=yy | \mathbf{D,R=y})$ is very similar to the first case except that $P(\mathbf{G=yy|R=y}) = \rho^2$, and thus the probability is $P(\mathbf{G}=yy | \mathbf{D,R=y}) = \frac{\rho^2}{c}\prod_{\{i|D_i=x\}} (1-\epsilon) \prod_{\{i|D_i\ne x\}} \epsilon$. 
 \end{enumerate}
-For the sake of this homework, we can assume $\rho^2=0.999$ and thus $\rho=0.999$. I think, we might have to estimate $\epsilon$ from the dataset?
+For the sake of this homework, we can assume $\rho^2=0.999$ and thus $\rho=0.999$. For $\epsilon$, we just set to a preset value of $\epsilon=0.5\%$ as this is a reasonable average genptyping error rate for Ilumina.\\
+
+## Posterior Probability calculation in R
+```{r load_bam_file,echo=FALSE,cache=TRUE}
+library('Rsamtools')
+bamFile=scanBam('17.41000000-42000000.HG00096.wgs.ILLUMINA.bwa.GBR.high_cov_pcr_free.20140203.bam')
+
+# names in the bam
+names(bamFile[[1]])
+
+lst <- lapply(names(bamFile[[1]]), function(elt) {
+  do.call(c, unname(lapply(bamFile, "[[", elt)))
+})
+names(lst) <- names(bamFile[[1]])
+
+bamFile_df=do.call("DataFrame", lst)
+# pos would be used to find start position
+# don't worry about strand, it's all being flipped
+bpRange=range(bamFile_df$pos,na.rm = T)
+length=bpRange[2]-bpRange[1]+max(bamFile_df$qwidth,na.rm=T)
+alleleCount=matrix(0,nrow=4,ncol=length)
+for (i in 1:nrow(bamFile_df)){
+  startPos=bamFile_df$pos[i]-bpRange[1]+1
+  genotypes=strsplit(paste(bamFile_df$seq[i],collapse=''),split='')[[1]]
+  for (nuc in genotypes){
+    nuc_inx=which(c('A','T','C','G') %in% nuc) 
+    alleleCount[nuc_inx,startPos] = alleleCount[nuc_inx,startPos]+1
+    startPos = startPos+1
+  }
+}
+
+```
+
+```{r calculate prob, echo=FALSE}
+epsilon=0.005; rho=0.999
+
+```
