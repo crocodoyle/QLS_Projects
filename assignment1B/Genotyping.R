@@ -6,9 +6,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 
 BiocManager::install("Rsamtools")
 library('Rsamtools')
-
-BiocManager::install("GenomicTools")
-
+# BiocManager::install("GenomicTools")
 library("seqinr")
 
 # Define directories
@@ -28,7 +26,7 @@ bamFile_df=do.call("DataFrame", lst)
 
 # Set parameters: ####
 NR<-length(bamFile[[1]]$pos) # Number of reads
-NR<-1000
+NR<-5
 RP<-bamFile[[1]]$pos[1:NR] # Read positions
 RL<-bamFile[[1]]$qwidth[1:NR] # Read lengths
 Begin<-RP[1]-1 # Relative position of the beginning of the analysis
@@ -131,7 +129,7 @@ for (h in (RP[1]:ReadEnd[NR])) { # For all nucleotide positions
   }
   h<-h+1
 }
-incidences[,180:200,2]
+incidences[,200,]
 votes<-sum(incidences[4,45,])
 
 
@@ -143,26 +141,33 @@ votes<-sum(incidences[4,45,])
 # Build huge alignment
 
 # Create G table
-G<-data.frame(matrix(0,n,10))
+G<-data.frame(matrix(0,NR,10))
 names(G) = c("AA","AC","AG","AT","CC","CG","CT","GG","GT","TT")
 ## Define nucleotide position
 p<-NULL # Nucleotide position
-# Start big for loop that reads one nucleotide position at the time here.
 
+# Create a table for the counts of each nucleotide for a given position (PofD)
 PofD<-data.frame(matrix(0,5,4))
 names(PofD) = c("nuc","counts", "probability", "nuc found?")
 PofD[,1]<-c("A","C","G","T","NA")
-# Fill in the PofD table:
-Genotype<-data.frame(matrix(0,(ReadEnd[NR]-Begin),5))
-names(Genotype) = c("Homo/Hetero/Uneven/Multiallelic",
-                "Best guess prob",
-                "3",
-                "4",
-                "5")
+#PofD[,2]<-c(0,2,0,2,0)
+
+# Create a table with the Genotype for each position
+Genotype<-data.frame(matrix(0,(ReadEnd[NR]-Begin),7))
+Genotype[,1]<-(RP[1]:ReadEnd[NR])
+names(Genotype) = c("Position","Di","Rel.Inc.","Ho","He","Un",
+                "Mu")
+# Create a list with the PofD data
+Dis<-list()
+EffReads<-NULL
+# Start big for loop that reads one nucleotide position at the time:
 h<-40999768
-for (h in (RP[1]:ReadEnd[NR])) {
+for (h in (RP[1]:(ReadEnd[NR]-1))) {# Fill in the PofD table:
   RNP<-(h-Begin) # Assign the relative nucleotide position
   print(RNP)
+  PofD<-data.frame(matrix(0,5,4))
+  names(PofD) = c("nuc","counts", "probability", "nuc found?")
+  PofD[,1]<-c("A","C","G","T","NA")
   PofD[,2]<-c(sum(incidences[1,RNP,]),
               sum(incidences[2,RNP,]),
               sum(incidences[3,RNP,]),
@@ -171,56 +176,65 @@ for (h in (RP[1]:ReadEnd[NR])) {
   # input counts: 
   # count incidences of each nucleotide at position p
   # how to count how many ACGTs from the reads data?
-  EffReads<-sum(PofD[,2])#Number of reads that effectively covered p with a non-zero nucleotide incidence
+  EffReads[RNP]<-sum(PofD[,2])#Number of reads that effectively covered p with a non-zero nucleotide incidence
   # Calculate the probability of each nucleotide from the data 
   # in the PofD table and identify undetected nucleotides:
-    for (i in 1:4) { # Calculate probabilities
-      PofD[i,3]<-PofD[i,2]/EffReads
-      if (PofD[i,2]==0) { # Detected nucleotide?
-        PofD[i,4]<-F
-      }else {
+  i<-1
+    for (i in 1:5) { # Calculate probabilities
+      PofD[i,3]<-PofD[i,2]/EffReads[RNP]
+      if (PofD[i,2]>0) { # Detected nucleotide?
         PofD[i,4]<-T
+      }else {
+        PofD[i,4]<-F
       }
       i<-i+1
     }
+  Dis[[RNP]]<-PofD
   # Evaluate the probability distribution and determine the genotype:
-  if (sum(PofD[,4])==1) {
+  if (sum(PofD[,4])==1 & PofD[5,4]==0) { # Only one nucleotide was found
     # print("Homozygous")
-    Genotype[RNP,1]<-1
-    Genotype[RNP,2]<-PofD[which.max(PofD[,2]),3]
-  } else if (sum(PofD[,4])==2) {
-    if (diff(PofD[which(PofD[,2]!=0),3])==0) {
+    Genotype[RNP,2]<-paste(rep(PofD[which.max(PofD[,2]),1],times=2),collapse = "") # Di nucleotides
+    Genotype[RNP,3]<-PofD[which.max(PofD[,2]),3] # Di incidence/Number of reads (will be = 1 in this case)
+    Genotype[RNP,4]<-1
+  } else if (sum(PofD[,4])==2 & PofD[5,4]==0) { # Two different nucleotides were detected
+    if (diff(PofD[which(PofD[,2]!=0),3])==0) { # Each with the same number of times detected,
       # print(paste("Heterozygous:",
       #             PofD[which(PofD[,2]!=0),1]))
-      Genotype[RNP,1]<-2
-      Genotype[RNP,2]<-max(PofD[which(PofD[,2]!=0),3])
+      Genotype[RNP,2]<-paste(PofD[which(PofD[,2]!=0),1],collapse = "") # Di nucleotides
+      Genotype[RNP,3]<-PofD[which.max(PofD[,2]),3] # Di incidence/Number of reads (will be = 0.5 in this case)
+      Genotype[RNP,5]<-1
       # Alele<-which(PofD[,2]!=0)
       # G[Alele[1],]<-(PofD[which(PofD[,2]!=0),3][1])/4
       # G[,Alele[2]]<-G+(PofD[which(PofD[,2]!=0),3][2])/4
-    }else{
+    }else if (PofD[5,4]==0) {
       # print(paste("Two options:",
       #             PofD[which(PofD[,2]!=0),1],
       #             "with a probability of",
       #             PofD[which(PofD[,2]!=0),3]))
-      Genotype[RNP,1]<-3
-      Genotype[RNP,2]<-PofD[which.max(PofD[,2]),3]
-      #Threshold strategy should go here
+      Genotype[RNP,2]<-PofD[which.max(PofD[,2]),1] # Di nucleotide
+      Genotype[RNP,3]<-PofD[which.max(PofD[,2]),3] # Di incidence/Number of reads (will be > 0.5 in this case)
+      Genotype[RNP,6]<-1
+      # Threshold strategy should go here (tolerance)
     }
   }else{
     # print(paste("Inconclusive (multiallelic), best guess is",
     #             PofD[which(PofD[,3]==max(PofD[,3])),1],
     #             "with a probability of", max(PofD[,3])))
-    Genotype[RNP,1]<-4
-    Genotype[RNP,2]<-PofD[which.max(PofD[,2]),3]
+    Genotype[RNP,2]<-PofD[which.max(PofD[,2]),1] # Di nucleotide
+    Genotype[RNP,3]<-PofD[which.max(PofD[,2]),3] # Di incidence/Number of reads (will be > 0.5 in this case)
+    Genotype[RNP,7]<-1
   }
   h<-h+1
 }
-# PofD # See the table, deactivate when in a loop
-Genotype[245,]
+PofD # See the table, deactivate when in a loop
+Dis[[20]]
+Genotype[1:20,]
 
-## Pr(G) ####
-# G[2:4,1] = 0
-# G[3:4,2] = 0
-# G[4,3] = 0
-# sum(G)==1
-# G
+# Sums
+Homozygous<-sum(Genotype[,4])
+Heterozygous<-sum(Genotype[,5])
+UnevenHeterozygous<-sum(Genotype[,6])
+InconclusiveOrMultiallelic<-sum(Genotype[,7])
+print(c(Homozygous,Heterozygous,UnevenHeterozygous,InconclusiveOrMultiallelic))
+
+
