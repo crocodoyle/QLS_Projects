@@ -27,8 +27,8 @@ names(lst) <- names(bamFile[[1]])
 bamFile_df=do.call("DataFrame", lst)
 
 # Set parameters: ####
-#NR<-length(bamFile[[1]]$pos) # Number of reads
-NR<-10
+NR<-length(bamFile[[1]]$pos) # Number of reads
+NR<-1000
 RP<-bamFile[[1]]$pos[1:NR] # Read positions
 RL<-bamFile[[1]]$qwidth[1:NR] # Read lengths
 Begin<-RP[1]-1 # Relative position of the beginning of the analysis
@@ -41,7 +41,7 @@ k<-1
 for (k in (1:NR)) {
   ReadSequence[k]<-as.character(bamFile[[1]]$seq[k])  # Extract the sequence
   ReadEnd[k]<-RP[k]+RL[k] # Read end position
-  ReadCoverage[[k]]<-seq((RP[k]-Begin),(ReadEnd[k]-Begin),1)
+  # ReadCoverage[[k]]<-seq((RP[k]-Begin),(ReadEnd[k]-Begin),1)
 }
 
 # Read reference genome chr 17 -> G  ####
@@ -83,6 +83,7 @@ for (k in (1:NR)) {
   NP[[k]]<-p # Nucleotide position
   k<-k+1
 }
+# Ignore Error in RP[k]:(RP[k] + 249) : NA/NaN argument
 
 # Assign nucleotide calls
 Calls<-list()
@@ -94,7 +95,7 @@ for (k in (1:NR)) {
 
 
 # Count nucleotide incidences ####
-incidences<-array(data = 0,dim = c(5,(ReadEnd[10]-Begin),NR))
+incidences<-array(data = 0,dim = c(5,(ReadEnd[NR]-Begin),NR))
 h<-40999768
 k<-1
 for (h in (RP[1]:ReadEnd[NR])) { # For all nucleotide positions
