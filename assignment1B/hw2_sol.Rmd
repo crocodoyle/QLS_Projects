@@ -84,6 +84,24 @@ for (i in 1:nrow(bamFile_df)){
 ```
 
 ```{r calculate prob, echo=FALSE}
+library('Rsamtools')
+library("seqinr")
+
 epsilon=0.005; rho=0.999
+
+P_G_xx = matrix(nrow=1, ncol=length)
+
+R<-read.table(file = "chr17-Copy.fasta")
+
+
+class(R)
+R = R[bpRange[1]:bpRange[2]]
+
+for (i in 1:ncol(alleleCount)){
+  R = which.max(R)
+  P_G_xx[1, i] = ((1-rho)^2) #????
+}
+
+
 
 ```
