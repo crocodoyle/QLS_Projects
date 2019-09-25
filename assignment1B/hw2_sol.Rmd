@@ -17,8 +17,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Define variables just as what we did in the lecture: Let $\mathbf{D}=\{\mathbf{D_1},\mathbf{D_2},\cdots\,\mathbf{D_n}\}$ be observed genotypes ($\mathbf{D_i}\indep\mathbf{D_j},\ \forall i\ne j$) on one specific genomic position from each reads passing that specific location. Let $\mathbf{R}$ be the reference genotype on this very same position, and $\mathbf{G}$ be the true genotype at this same location. Using the above settings, what we are interested in can be expressed as $P(\mathbf{G|D,R})$. Based on Bayes' Rule, this can be rewritten as:
 \begin{eqnarray*}
-P(\mathbf{G|D,R})&=&\frac{P(\mathbf{D|G,R)}\cdotP(\mathbf{G|R}))}{P(\mathbf{D|R})} \\
-&=& \frac{P(\mathbf{D|G})\cdotP(\mathbf{G|R})}{P(\mathbf{D|R})}
+P(\mathbf{G|D,R})&=&\frac{P(\mathbf{D|G,R)}\cdot P(\mathbf{G|R}))}{P(\mathbf{D|R})} \\
+&=& \frac{P(\mathbf{D|G})\cdot P(\mathbf{G|R})}{P(\mathbf{D|R})}
 \end{eqnarray*}
 since $\mathbf{D}$ and $\mathbf{R}$ are conditionally independent when given $\mathbf{G}$.\
 Now, for each postion $n$ we want to calculate the probability of the true genotype ($\mathbf{G}$) being $xx$ (0 copies of reference allele), $xy$ (1 reference allele), and $yy$ (2 reference allele) given the data $D$.
@@ -36,7 +36,7 @@ If we define the probability of a read error as $\epsilon$, the first term of th
 \item $P(\mathbf{D|R=y})$: This is a scaling constant and does not depend on $\mathbf{G}$, we noted it as $c$ for now. This can be solved (by computer of course) using the fact that $P(\mathbf{G}=xx | \mathbf{D,R=y})+P(\mathbf{G}=xy | \mathbf{D,R=y})+P(\mathbf{G}=yy | \mathbf{D,R=y})=1$
 \end{itemize}
 To sum up, the probability that $P(\mathbf{G}=xx | \mathbf{D,R=y}) = \frac{(1-\rho)^2}{c}\prod_{\{i|D_i=x\}} (1-\epsilon) \prod_{\{i|D_i\ne x\}} \epsilon$.
-\item $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{P(\mathbf{D|G}=xy)\cdotP(\mathbf{G}=xy|\mathbf{R=y})}{P(\mathbf{D|R=y})}$
+\item $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{P(\mathbf{D|G}=xy)\cdot P(\mathbf{G}=xy|\mathbf{R=y})}{P(\mathbf{D|R=y})}$
 \begin{itemize}
 \item 
 \begin{eqnarray*}
@@ -44,7 +44,7 @@ P(\mathbf{D|G}=xy) &=& \prod_{i=1}^n P(D_i|\mathbf{G}=xy)\\
 &=& \prod_{i|D_i\in {x,y}} P(D_i|\mathbf{G}=xy) * \prod_{i|D_i\notin {x,y}} P(D_i|\mathbf{G}=xy)
 &=& = \frac{1}{2}(1-\epsilon)+\frac{\epsilon/3}{2} \cdot \frac{\epsilon}{3}
 \end{eqnarray*} 
-\item $P(\mathbf{G=xy|R=y})$ is simply $2*\rho*(1-\rho)$ based on HWE.
+\item $P(\mathbf{G=xy|R=y})$ is simply $2*\rho \cdot (1-\rho)$ based on HWE.
 \item $P(\mathbf{D|R=y})$: as before, this is a constant $c$.
 \end{itemize}
 To sum up, the probability that $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{2*\rho*(1-\rho)}{c} \prod_{\{i|D_i\in {x,y}\}}\frac{1-2/3\epsilon}{2} * \prod_{\{i|D_i\notin {x,y}\}} \frac{\epsilon}{3}$
@@ -84,6 +84,24 @@ for (i in 1:nrow(bamFile_df)){
 ```
 
 ```{r calculate prob, echo=FALSE}
+library('Rsamtools')
+library("seqinr")
+
 epsilon=0.005; rho=0.999
+
+P_G_xx = matrix(nrow=1, ncol=length)
+
+R<-read.table(file = "chr17-Copy.fasta")
+
+
+class(R)
+R = R[bpRange[1]:bpRange[2]]
+
+for (i in 1:ncol(alleleCount)){
+  R = which.max(R)
+  P_G_xx[1, i] = ((1-rho)^2) #????
+}
+
+
 
 ```
