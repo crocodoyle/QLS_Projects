@@ -106,8 +106,8 @@ position, and \(\mathbf{G}\) be the true genotype at this same location.
 Using the above settings, what we are interested in can be expressed as
 \(P(\mathbf{G|D,R})\). Based on Bayes' Rule, this can be rewritten as:
 \begin{eqnarray*}
-P(\mathbf{G|D,R})&=&\frac{P(\mathbf{D|G,R)}\cdotP(\mathbf{G|R}))}{P(\mathbf{D|R})} \\
-&=& \frac{P(\mathbf{D|G})\cdotP(\mathbf{G|R})}{P(\mathbf{D|R})}
+P(\mathbf{G|D,R})&=&\frac{P(\mathbf{D|G,R)}\cdot P(\mathbf{G|R}))}{P(\mathbf{D|R})} \\
+&=& \frac{P(\mathbf{D|G})\cdot P(\mathbf{G|R})}{P(\mathbf{D|R})}
 \end{eqnarray*} since \(\mathbf{D}\) and \(\mathbf{R}\) are
 conditionally independent when given \(\mathbf{G}\).\\
 Now, for each postion \(n\) we want to calculate the probability of the
@@ -129,7 +129,7 @@ If we define the probability of a read error as $\epsilon$, the first term of th
 \item $P(\mathbf{D|R=y})$: This is a scaling constant and does not depend on $\mathbf{G}$, we noted it as $c$ for now. This can be solved (by computer of course) using the fact that $P(\mathbf{G}=xx | \mathbf{D,R=y})+P(\mathbf{G}=xy | \mathbf{D,R=y})+P(\mathbf{G}=yy | \mathbf{D,R=y})=1$
 \end{itemize}
 To sum up, the probability that $P(\mathbf{G}=xx | \mathbf{D,R=y}) = \frac{(1-\rho)^2}{c}\prod_{\{i|D_i=x\}} (1-\epsilon) \prod_{\{i|D_i\ne x\}} \epsilon$.
-\item $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{P(\mathbf{D|G}=xy)\cdotP(\mathbf{G}=xy|\mathbf{R=y})}{P(\mathbf{D|R=y})}$
+\item $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{P(\mathbf{D|G}=xy)\cdot P(\mathbf{G}=xy|\mathbf{R=y})}{P(\mathbf{D|R=y})}$
 \begin{itemize}
 \item 
 \begin{eqnarray*}
@@ -137,7 +137,7 @@ P(\mathbf{D|G}=xy) &=& \prod_{i=1}^n P(D_i|\mathbf{G}=xy)\\
 &=& \prod_{i|D_i\in {x,y}} P(D_i|\mathbf{G}=xy) * \prod_{i|D_i\notin {x,y}} P(D_i|\mathbf{G}=xy)
 &=& = \frac{1}{2}(1-\epsilon)+\frac{\epsilon/3}{2} \cdot \frac{\epsilon}{3}
 \end{eqnarray*} 
-\item $P(\mathbf{G=xy|R=y})$ is simply $2*\rho*(1-\rho)$ based on HWE.
+\item $P(\mathbf{G=xy|R=y})$ is simply $2*\rho \cdot (1-\rho)$ based on HWE.
 \item $P(\mathbf{D|R=y})$: as before, this is a constant $c$.
 \end{itemize}
 To sum up, the probability that $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{2*\rho*(1-\rho)}{c} \prod_{\{i|D_i\in {x,y}\}}\frac{1-2/3\epsilon}{2} * \prod_{\{i|D_i\notin {x,y}\}} \frac{\epsilon}{3}$
@@ -145,8 +145,118 @@ To sum up, the probability that $P(\mathbf{G}=xy | \mathbf{D,R=y}) = \frac{2*\rh
 \end{enumerate}
 
 For the sake of this homework, we can assume \(\rho^2=0.999\) and thus
-\(\rho=0.999\). I think, we might have to estimate \(\epsilon\) from the
-dataset?
+\(\rho=0.999\). For \(\epsilon\), we just set to a preset value of
+\(\epsilon=0.5\%\) as this is a reasonable average genptyping error rate
+for Ilumina.\textbackslash{}
+
+\hypertarget{posterior-probability-calculation-in-r}{%
+\subsection{Posterior Probability calculation in
+R}\label{posterior-probability-calculation-in-r}}
+
+\begin{verbatim}
+## Loading required package: GenomeInfoDb
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: BiocGenerics
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: parallel
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'BiocGenerics'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:parallel':
+## 
+##     clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+##     clusterExport, clusterMap, parApply, parCapply, parLapply,
+##     parLapplyLB, parRapply, parSapply, parSapplyLB
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:stats':
+## 
+##     IQR, mad, sd, var, xtabs
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:base':
+## 
+##     anyDuplicated, append, as.data.frame, basename, cbind,
+##     colnames, dirname, do.call, duplicated, eval, evalq, Filter,
+##     Find, get, grep, grepl, intersect, is.unsorted, lapply, Map,
+##     mapply, match, mget, order, paste, pmax, pmax.int, pmin,
+##     pmin.int, Position, rank, rbind, Reduce, rownames, sapply,
+##     setdiff, sort, table, tapply, union, unique, unsplit, which,
+##     which.max, which.min
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: S4Vectors
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: stats4
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'S4Vectors'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:base':
+## 
+##     expand.grid
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: IRanges
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'IRanges'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:grDevices':
+## 
+##     windows
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: GenomicRanges
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: Biostrings
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: XVector
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'Biostrings'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:base':
+## 
+##     strsplit
+\end{verbatim}
+
+\begin{verbatim}
+##  [1] "qname"  "flag"   "rname"  "strand" "pos"    "qwidth" "mapq"  
+##  [8] "cigar"  "mrnm"   "mpos"   "isize"  "seq"    "qual"
+\end{verbatim}
 
 
 \end{document}
